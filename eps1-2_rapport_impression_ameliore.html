@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>التوقيت الأسبوعي للقيمين</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+    :root, [data-theme="light"] {
+        color-scheme: light;
+        --paper: #f3efe4;
+        --paper-line: #e6dfcd;
+        --ink: #23291f;
+        --ink-soft: #6b6255;
+        --card: #fffdf7;
+        --accent: #2f6a4f;
+        --accent-ink: #ffffff;
+        --accent-soft: #e2ebe4;
+        --gold: #a97a2f;
+        --danger: #a4372e;
+        --danger-soft: #f7e3e0;
+        --border: #ddd2b8;
+        --shadow: 0 1px 2px rgba(35,41,31,0.06);
+    }
+
+    [data-theme="dark"] {
+        color-scheme: dark;
+        --paper: #131b16;
+        --paper-line: #1e2a21;
+        --ink: #eae6d9;
+        --ink-soft: #a3ab9d;
+        --card: #1a251d;
+        --accent: #5aa77e;
+        --accent-ink: #0c130e;
+        --accent-soft: #22332a;
+        --gold: #d7a54f;
+        --danger: #e2897a;
+        --danger-soft: #3a221f;
+        --border: #2c3a2f;
+        --shadow: 0 1px 2px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, sans-serif;
+        background: var(--paper);
+        color: var(--ink);
+        direction: rtl;
+        padding: 24px 16px 60px;
+        transition: background .2s, color .2s;
+    }
+
+    .container { max-width: 980px; margin: 0 auto; }
+
+    /* ===== Header ===== */
+    header.app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 16px;
+        border-bottom: 2px solid var(--ink);
+        padding-bottom: 14px;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+    }
+
+    .app-header h1 {
+        font-size: 1.7rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+    }
+
+    .app-header .tagline {
+        font-size: 0.85rem;
+        color: var(--ink-soft);
+        margin-top: 4px;
+    }
+
+    .live-clock {
+        text-align: left;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .live-clock .time {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .live-clock .date {
+        font-size: 0.78rem;
+        color: var(--ink-soft);
+    }
+
+    .theme-btn {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--ink);
+        border-radius: 20px;
+        padding: 6px 14px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 500;
+    }
+    .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ===== Sheets tabs (ledger index style) ===== */
+    .sheets-bar {
+        display: flex;
+        align-items: flex-end;
+        gap: 4px;
+        overflow-x: auto;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .sheet-tab {
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding: 9px 14px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.92rem;
+        color: var(--ink-soft);
+        white-space: nowrap;
+        font-family: inherit;
+    }
+
+    .sheet-tab.active {
+        color: var(--accent);
+        font-weight: 700;
+        border-bottom-color: var(--accent);
+    }
+
+    .add-sheet-btn {
+        background: none;
+        border: none;
+        color: var(--ink-soft);
+        padding: 9px 12px;
+        cursor: pointer;
+        font-size: 0.92rem;
+        font-family: inherit;
+        white-space: nowrap;
+    }
+    .add-sheet-btn:hover { color: var(--accent); }
+
+    /* ===== Sheet controls ===== */
+    .sheet-controls {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 14px 16px;
+        margin: 16px 0 20px;
+        box-shadow: var(--shadow);
+    }
+
+    .controls-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px;
+        justify-content: space-between;
+    }
+    .controls-row + .controls-row { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+
+    .field {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .field label { font-size: 0.8rem; color: var(--ink-soft); white-space: nowrap; }
+
+    input[type="text"], input[type="number"] {
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 6px 8px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--paper);
+        color: var(--ink);
+    }
+    input:focus-visible, button:focus-visible, .sheet-tab:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    .sheet-name-input { font-size: 1rem; font-weight: 700; width: 220px; }
+
+    .stepper { display: flex; align-items: center; gap: 6px; }
+    .stepper button {
+        width: 26px; height: 26px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        background: var(--paper);
+        color: var(--ink);
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.95rem;
+        line-height: 1;
+    }
+    .stepper button:hover { border-color: var(--accent); color: var(--accent); }
+    .stepper span { min-width: 16px; text-align: center; font-weight: 700; }
+
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .btn {
+        padding: 7px 13px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.82rem;
+        font-family: inherit;
+        transition: opacity .15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-print { background: var(--ink); color: var(--card); }
+    .btn-outline { background: transparent; border-color: var(--border); color: var(--ink); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); opacity: 1; }
+    .btn-delete { background: transparent; border-color: var(--danger); color: var(--danger); }
+    .btn-delete:hover { background: var(--danger); color: #fff; opacity: 1; }
+
+    /* ===== Weekly summary ===== */
+    .weekly-summary {
+        background: var(--ink);
+        color: var(--paper);
+        border-radius: 6px;
+        padding: 18px 20px;
+        margin-bottom: 22px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: space-between;
+        align-items: center;
+    }
+    [data-theme="dark"] .weekly-summary { background: var(--card); border: 1px solid var(--border); }
+
+    .weekly-summary .main-total .label { font-size: 0.8rem; opacity: 0.75; margin-bottom: 2px; }
+    .weekly-summary .main-total .total-time {
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: var(--gold);
+        font-variant-numeric: tabular-nums;
+    }
+    .weekly-summary .sub-stats {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+    }
+    .weekly-summary .stat { text-align: center; }
+    .weekly-summary .stat .num { font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .weekly-summary .stat .lbl { font-size: 0.72rem; opacity: 0.75; }
+
+    /* ===== Day rows ===== */
+    .day-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-top: 3px solid var(--accent);
+        border-radius: 6px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+        box-shadow: var(--shadow);
+    }
+
+    .day-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--paper-line);
+    }
+
+    .day-title { font-size: 1.05rem; font-weight: 700; }
+
+    .day-issue {
+        font-size: 0.76rem;
+        color: var(--danger);
+        background: var(--danger-soft);
+        padding: 5px 9px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+
+    .sessions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .session-box {
+        background: var(--paper);
+        border: 1px solid var(--border);
+        padding: 9px 10px;
+        border-radius: 5px;
+    }
+    .session-box.has-issue { border-color: var(--danger); }
+
+    .session-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 7px;
+    }
+
+    .session-title { font-size: 0.82rem; font-weight: 700; color: var(--ink-soft); }
+
+    .clear-session-btn {
+        background: none;
+        border: none;
+        color: var(--danger);
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 0 4px;
+        line-height: 1;
+    }
+
+    .inputs-row { display: flex; align-items: center; gap: 6px; }
+    .inputs-row label { font-size: 0.75rem; color: var(--ink-soft); }
+
+    input[type="time"] {
+        width: 100%;
+        padding: 5px 6px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--card);
+        color: var(--ink);
+        font-size: 0.88rem;
+        font-family: inherit;
+    }
+    input[type="time"]:focus { border-color: var(--accent); }
+
+    .day-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        background: var(--accent-soft);
+        padding: 7px 12px;
+        border-radius: 4px;
+        font-size: 0.88rem;
+    }
+    .day-total { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+    .day-footer .btn-group { gap: 6px; }
+    .mini-btn {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--ink-soft);
+        padding: 3px 9px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.74rem;
+        font-family: inherit;
+    }
+    .mini-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .mini-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+    footer.app-footer {
+        text-align: center;
+        font-size: 0.75rem;
+        color: var(--ink-soft);
+        margin-top: 30px;
+    }
+
+    #printArea { display: none; }
+
+    @page {
+        size: A4 landscape;
+        margin: 7mm;
+    }
+
+    @media print {
+        html, body {
+            width: 100%;
+            height: auto;
+            margin: 0;
+            padding: 0;
+            background: #fff !important;
+            color: #000 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body > *:not(#printArea) {
+            display: none !important;
+        }
+
+        #printArea {
+            display: block !important;
+            position: static;
+            width: 100%;
+            direction: rtl;
+            padding: 0;
+            margin: 0;
+            font-family: "Tajawal", "Segoe UI", Tahoma, Arial, sans-serif;
+            color: #000;
+            font-weight: 700;
+        }
+
+        /* ===== En-tête ===== */
+        .print-header {
+            display: flex;
+            direction: ltr;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8mm;
+            margin-bottom: 3mm;
+            padding-bottom: 2.5mm;
+            border-bottom: 1.4px solid #000;
+        }
+
+        .print-header .meta-box {
+            direction: rtl;
+            text-align: right;
+            font-size: 10pt;
+            line-height: 1.45;
+            min-width: 42mm;
+            font-weight: 800;
+        }
+
+        .print-header .meta-box .meta-label {
+            font-weight: 900;
+        }
+
+        .print-header .sheet-title {
+            flex: 1;
+            text-align: center;
+            font-size: 15pt;
+            font-weight: 900;
+            line-height: 1.35;
+            padding: 0;
+        }
+
+        /* ===== Informations au-dessus du tableau ===== */
+        .print-meta-row2 {
+            display: flex;
+            direction: rtl;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8mm;
+            margin: 0 0 4mm;
+            padding: 1mm 1mm 2.5mm;
+            border-bottom: 0.8px solid #555;
+            font-size: 9.5pt;
+            font-weight: 800;
+            line-height: 1.75;
+        }
+
+        .print-meta-row2 .meta-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1mm;
+            min-width: 48mm;
+            flex: 1;
+        }
+
+        .print-meta-row2 .meta-col.center {
+            flex-direction: column;
+            gap: 1mm;
+            align-items: center;
+        }
+
+        .print-meta-row2 .meta-item {
+            white-space: normal;
+        }
+
+        .print-meta-row2 .meta-item .meta-label {
+            font-weight: 900;
+        }
+
+        /* ===== Tableau ===== */
+        table.print-table {
+            width: 100%;
+            margin: 0;
+            border-collapse: collapse;
+            border-spacing: 0;
+            text-align: center;
+            table-layout: fixed;
+            page-break-inside: avoid;
+            font-weight: 800;
+        }
+
+        table.print-table th,
+        table.print-table td {
+            border: 1.1px solid #000;
+            padding: 4.2px 4px;
+            font-size: 9pt;
+            font-weight: 800;
+            line-height: 1.55;
+            vertical-align: middle;
+            word-break: break-word;
+        }
+
+        table.print-table th {
+            background: #e9e9e9 !important;
+            font-size: 9.2pt;
+            font-weight: 900;
+            line-height: 1.45;
+        }
+
+        table.print-table td strong,
+        table.print-table th strong {
+            font-weight: 900;
+        }
+
+        table.print-table thead {
+            display: table-header-group;
+        }
+
+        table.print-table tr {
+            page-break-inside: avoid;
+        }
+
+        table.print-table tbody tr {
+            min-height: 9mm;
+        }
+
+        table.print-table tr.total-row {
+            font-weight: 900;
+            background: #f1f1f1 !important;
+        }
+
+        table.print-table tr.total-row td {
+            font-weight: 900;
+            padding-top: 4.5px;
+            padding-bottom: 4.5px;
+        }
+
+        /* ===== النصوص تحت الجدول =====
+           interligne واضح مع تقليل المسافة الخارجية حتى تبقى الصفحة A4 */
+        .print-note {
+            text-align: right;
+            font-size: 9.5pt;
+            font-weight: 800;
+            margin: 3.5mm 0 0;
+            padding: 2.5mm 1mm 0;
+            border-top: 0.8px solid #555;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2mm;
+            line-height: 1.75;
+        }
+
+        .print-note .note-line {
+            font-weight: 800;
+        }
+
+        .print-note .meta-label {
+            font-weight: 900;
+        }
+
+        /* ===== الإمضاءات ===== */
+        .print-footer {
+            display: flex;
+            direction: ltr;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8mm;
+            margin-top: 3.5mm;
+            padding-top: 2mm;
+            font-weight: 800;
+        }
+
+        .print-footer .meta-box {
+            direction: rtl;
+            text-align: center;
+            font-size: 9.5pt;
+            line-height: 1.55;
+            min-width: 45mm;
+            flex: 1;
+            font-weight: 800;
+        }
+
+        .print-footer .meta-box .meta-label {
+            font-weight: 900;
+            display: block;
+            margin-bottom: 5mm;
+        }
+
+        /* تحسين خاص للمساحات الطويلة حتى لا تنتقل الصفحة إلى صفحة ثانية */
+        .print-header,
+        .print-meta-row2,
+        .print-note,
+        .print-footer {
+            page-break-inside: avoid;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .app-header { flex-direction: column; align-items: flex-start; }
+        .live-clock { text-align: right; }
+        .controls-row { justify-content: flex-start; }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <header class="app-header">
+        <div>
+            <h1>جداول أوقات القيمين</h1>
+            <div class="tagline">مولّد جداول أوقات القيمين و حساب السّاعات المسندة</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div class="live-clock">
+                <div class="time" id="liveTime">--:--</div>
+                <div class="date" id="liveDate">—</div>
+            </div>
+            <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()">🌓 المظهر</button>
+        </div>
+    </header>
+
+    <div class="sheets-bar" id="sheetsBar"></div>
+
+    <div class="sheet-controls">
+        <div class="controls-row">
+            <div class="field">
+                <label>اسم الجدول</label>
+                <input type="text" id="sheetNameInput" class="sheet-name-input" onchange="updateSheetName(this.value)">
+            </div>
+            <div class="field">
+                <label>عدد الحصص يوميًا:</label>
+                <div class="stepper">
+                    <button type="button" onclick="changeSessionsCount(-1)" aria-label="تقليل عدد الحصص">−</button>
+                    <span id="sessionsCountDisplay">3</span>
+                    <button type="button" onclick="changeSessionsCount(1)" aria-label="زيادة عدد الحصص">+</button>
+                </div>
+            </div>
+        </div>
+        <div class="controls-row">
+            <div class="btn-group">
+                <button class="btn btn-outline" onclick="duplicateSheet()">⧉ تكرار الورقة</button>
+                <button class="btn btn-outline" onclick="exportData()">⬇ تصدير نسخة احتياطية</button>
+                <button class="btn btn-outline" onclick="document.getElementById('importFileInput').click()">⬆ استيراد</button>
+                <button class="btn btn-print" onclick="printCurrentSheet()">🖨 طباعة الورقة</button>
+                <button class="btn btn-delete" onclick="deleteCurrentSheet()">🗑 حذف الورقة</button>
+            </div>
+            <input type="file" id="importFileInput" accept="application/json" style="display:none" onchange="importData(this.files[0])">
+        </div>
+        <div class="controls-row">
+            <div class="field">
+                <label>المدرسة </label>
+                <input type="text" id="metaInstitution" onchange="updateMetaField('institution', this.value)">
+            </div>
+            <div class="field">
+                <label>السنة الدراسية:</label>
+                <input type="text" id="metaSchoolYear" onchange="updateMetaField('schoolYear', this.value)">
+            </div>
+            <div class="field">
+                <label>إمضاء القيّم/ة:</label>
+                <input type="text" id="metaValues" onchange="updateMetaField('values', this.value)">
+            </div>
+            <div class="field">
+                <label>القيم العام:</label>
+                <input type="text" id="metaGeneralValues" onchange="updateMetaField('generalValues', this.value)">
+            </div>
+            <div class="field">
+                <label>المدير:</label>
+                <input type="text" id="metaDirector" onchange="updateMetaField('director', this.value)">
+            </div>
+        </div>
+        <div class="controls-row">
+            <div class="field">
+                <label>السّيّد(ة):</label>
+                <input type="text" id="metaMrMrs" onchange="updateMetaField('mrMrs', this.value)">
+            </div>
+            <div class="field">
+                <label>الرّتبة:</label>
+                <input type="text" id="metaRank" onchange="updateMetaField('rank', this.value)">
+            </div>
+            <div class="field">
+                <label>السّاعات المطالب بها:</label>
+                <input type="text" id="metaHoursRequired" onchange="updateMetaField('hoursRequired', this.value)">
+            </div>
+            <div class="field">
+                <label>السّاعات القائم بها:</label>
+                <input type="text" id="metaHoursPerformed" onchange="updateMetaField('hoursPerformed', this.value)">
+            </div>
+        </div>
+        <div class="controls-row">
+            <div class="field">
+                <label>يبدأ العمل بهذا الجدول بداية من يوم:</label>
+                <input type="text" id="metaStartDate" inputmode="numeric" placeholder="يوم-شهر-سنة" onchange="handleDateTextChange('startDate', this.value)">
+            </div>
+            <div class="field">
+                <label>اطلعت عليه و اتصلت بالأصل منه، في:</label>
+                <input type="text" id="metaReviewDate" inputmode="numeric" placeholder="يوم-شهر-سنة" onchange="handleDateTextChange('reviewDate', this.value)">
+            </div>
+            <div class="field" style="flex:1; min-width:240px;">
+                <label>المهام و المشمولات:</label>
+                <input type="text" id="metaTasks" onchange="updateMetaField('tasks', this.value)" style="flex:1;">
+            </div>
+        </div>
+    </div>
+
+    <div class="weekly-summary">
+        <div class="main-total">
+            <div class="label"> مجموع السّاعات في الأسبوع</div>
+            <div class="total-time" id="weeklyTotal"></div>
+        </div>
+        <div class="sub-stats">
+            <div class="stat"><div class="num" id="statDecimal">0.00</div><div class="lbl">بالنظام العشري</div></div>
+            <div class="stat"><div class="num" id="statDays">0 / 7</div><div class="lbl">أيام العمل</div></div>
+            <div class="stat"><div class="num" id="statAvg">0.00</div><div class="lbl">متوسط اليوم (ساعة)</div></div>
+        </div>
+    </div>
+
+    <div id="daysContainer"></div>
+
+    <footer class="app-footer">تُحفظ بياناتك تلقائيًا في هذا المتصفح — استخدم زر التصدير لأخذ نسخة احتياطية</footer>
+</div>
+
+<div id="printArea"></div>
+
+<script>
+    const days = ["الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"];
+    const DEFAULT_SESSIONS = 3;
+    const MIN_SESSIONS = 1;
+    const MAX_SESSIONS = 6;
+    const STORAGE_KEY = "weekly_schedule_app_data";
+
+    let appData = { activeSheetId: null, theme: "light", sheets: [] };
+
+    // ---------- تخزين ----------
+    function loadData() {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (savedData) {
+            try { appData = JSON.parse(savedData); } catch (e) { appData = { activeSheetId: null, theme: "light", sheets: [] }; }
+        }
+        if (!appData.sheets || appData.sheets.length === 0) {
+            const defaultSheet = createNewSheetObject("الجدول الأساسي");
+            appData.sheets = [defaultSheet];
+            appData.activeSheetId = defaultSheet.id;
+        } else if (!appData.activeSheetId || !appData.sheets.find(s => s.id === appData.activeSheetId)) {
+            appData.activeSheetId = appData.sheets[0].id;
+        }
+        // توافق مع بيانات قديمة
+        appData.sheets.forEach(s => {
+            if (!s.sessionsCount) s.sessionsCount = DEFAULT_SESSIONS;
+            if (!s.data) s.data = {};
+            if (typeof s.institution !== "string") s.institution = "";
+            if (typeof s.schoolYear !== "string") s.schoolYear = "";
+            if (typeof s.values !== "string") s.values = "";
+            if (typeof s.generalValues !== "string") s.generalValues = "";
+            if (typeof s.director !== "string") s.director = "";
+            if (typeof s.mrMrs !== "string") s.mrMrs = "";
+            if (typeof s.rank !== "string") s.rank = "";
+            if (typeof s.hoursRequired !== "string") s.hoursRequired = "";
+            if (typeof s.hoursPerformed !== "string") s.hoursPerformed = "";
+            if (typeof s.startDate !== "string") s.startDate = "";
+            if (typeof s.reviewDate !== "string") s.reviewDate = "";
+            if (typeof s.tasks !== "string") s.tasks = "";
+        });
+        if (!appData.theme) appData.theme = "light";
+
+        document.documentElement.setAttribute('data-theme', appData.theme);
+        renderApp();
+        startClock();
+    }
+
+    function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    }
+
+    function createNewSheetObject(name) {
+        return {
+            id: 'sheet_' + Date.now() + Math.floor(Math.random() * 1000),
+            name: name,
+            sessionsCount: DEFAULT_SESSIONS,
+            institution: "",
+            schoolYear: "",
+            values: "",
+            generalValues: "",
+            director: "",
+            mrMrs: "",
+            rank: "",
+            hoursRequired: "",
+            hoursPerformed: "",
+            startDate: "",
+            reviewDate: "",
+            tasks: "",
+            data: {}
+        };
+    }
+
+    function getActiveSheet() {
+        return appData.sheets.find(s => s.id === appData.activeSheetId) || appData.sheets[0];
+    }
+
+    // ---------- أدوات وقت ----------
+    function formatMinutes(totalMinutes) {
+        if (totalMinutes <= 0 || isNaN(totalMinutes)) return "";
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        let result = "";
+        if (hours > 0) result += `${hours} ساعة `;
+        if (minutes > 0) { if (hours > 0) result += "و "; result += `${minutes} دقيقة`; }
+        return result;
+    }
+
+    function getSessionMinutes(sheet, dayIndex, sessionIndex) {
+        const start = sheet.data[`d${dayIndex}_s${sessionIndex}_start`];
+        const end = sheet.data[`d${dayIndex}_s${sessionIndex}_end`];
+        if (!start || !end) return 0;
+        const [startH, startM] = start.split(':').map(Number);
+        const [endH, endM] = end.split(':').map(Number);
+        const startTotal = startH * 60 + startM;
+        const endTotal = endH * 60 + endM;
+        return endTotal > startTotal ? endTotal - startTotal : 0;
+    }
+
+    function getDayIssues(sheet, dayIdx) {
+        const issues = [];
+        const intervals = [];
+        for (let s = 1; s <= sheet.sessionsCount; s++) {
+            const start = sheet.data[`d${dayIdx}_s${s}_start`];
+            const end = sheet.data[`d${dayIdx}_s${s}_end`];
+            if (!start || !end) continue;
+            const [sh, sm] = start.split(':').map(Number);
+            const [eh, em] = end.split(':').map(Number);
+            const sMin = sh * 60 + sm, eMin = eh * 60 + em;
+            if (eMin <= sMin) { issues.push(`وقت النهاية في الحصة ${s} يجب أن يكون بعد وقت البداية`); continue; }
+            intervals.push({ s, sMin, eMin });
+        }
+        intervals.sort((a, b) => a.sMin - b.sMin);
+        for (let i = 1; i < intervals.length; i++) {
+            if (intervals[i].sMin < intervals[i - 1].eMin) {
+                issues.push(`تداخل بين الحصة ${intervals[i - 1].s} والحصة ${intervals[i].s}`);
+            }
+        }
+        return issues;
+    }
+
+    // ---------- إدارة الأوراق ----------
+    function addNewSheet() {
+        const sheetName = prompt("أدخل اسم الورقة الجديدة:", "جدول جديد " + (appData.sheets.length + 1));
+        if (sheetName && sheetName.trim() !== "") {
+            const newSheet = createNewSheetObject(sheetName.trim());
+            appData.sheets.push(newSheet);
+            appData.activeSheetId = newSheet.id;
+            saveData();
+            renderApp();
+        }
+    }
+
+    function duplicateSheet() {
+        const current = getActiveSheet();
+        const copy = JSON.parse(JSON.stringify(current));
+        copy.id = 'sheet_' + Date.now() + Math.floor(Math.random() * 1000);
+        copy.name = current.name + " (نسخة)";
+        appData.sheets.push(copy);
+        appData.activeSheetId = copy.id;
+        saveData();
+        renderApp();
+    }
+
+    function updateSheetName(newName) {
+        if (!newName.trim()) return;
+        getActiveSheet().name = newName.trim();
+        saveData();
+        renderSheetsBar();
+    }
+
+    function normalizeDateText(value) {
+        if (!value) return "";
+        value = String(value).trim().replace(/[\\/\\.]/g, "-");
+        const parts = value.split("-").map(p => p.trim()).filter(Boolean);
+        if (parts.length === 3 && parts.every(p => /^\\d+$/.test(p))) {
+            let d = parts[0].padStart(2, "0");
+            let m = parts[1].padStart(2, "0");
+            let y = parts[2];
+            if (y.length === 2) y = "20" + y;
+            if (y.length === 4) return `${d}-${m}-${y}`;
+        }
+        return value;
+    }
+
+    function handleDateTextChange(field, value) {
+        const normalized = normalizeDateText(value);
+        getActiveSheet()[field] = normalized;
+        const el = document.getElementById(field === "startDate" ? "metaStartDate" : "metaReviewDate");
+        if (el) el.value = normalized;
+        saveData();
+    }
+
+    function updateMetaField(field, value) {
+        getActiveSheet()[field] = value;
+        saveData();
+    }
+
+    function changeSessionsCount(delta) {
+        const sheet = getActiveSheet();
+        const next = sheet.sessionsCount + delta;
+        if (next < MIN_SESSIONS || next > MAX_SESSIONS) return;
+        sheet.sessionsCount = next;
+        saveData();
+        renderApp();
+    }
+
+    function deleteCurrentSheet() {
+        if (appData.sheets.length <= 1) { alert("لا يمكنك حذف الورقة الوحيدة المتبقية!"); return; }
+        if (confirm("هل أنت متأكد من رغبتك في حذف هذه الورقة؟")) {
+            appData.sheets = appData.sheets.filter(s => s.id !== appData.activeSheetId);
+            appData.activeSheetId = appData.sheets[0].id;
+            saveData();
+            renderApp();
+        }
+    }
+
+    function switchSheet(sheetId) {
+        appData.activeSheetId = sheetId;
+        saveData();
+        renderApp();
+    }
+
+    // ---------- إدخال الأوقات ----------
+    function handleTimeChange(dayIdx, sessionIdx, type, value) {
+        const currentSheet = getActiveSheet();
+        currentSheet.data[`d${dayIdx}_s${sessionIdx}_${type}`] = value;
+        saveData();
+        calculateAndDisplayTotals();
+    }
+
+    function clearSession(dayIdx, sessionIdx) {
+        const currentSheet = getActiveSheet();
+        delete currentSheet.data[`d${dayIdx}_s${sessionIdx}_start`];
+        delete currentSheet.data[`d${dayIdx}_s${sessionIdx}_end`];
+        const startEl = document.getElementById(`d${dayIdx}_s${sessionIdx}_start`);
+        const endEl = document.getElementById(`d${dayIdx}_s${sessionIdx}_end`);
+        if (startEl) startEl.value = "";
+        if (endEl) endEl.value = "";
+        saveData();
+        calculateAndDisplayTotals();
+    }
+
+    function clearDay(dayIdx) {
+        const currentSheet = getActiveSheet();
+        for (let s = 1; s <= currentSheet.sessionsCount; s++) clearSession(dayIdx, s);
+    }
+
+    function applyDayToAll(dayIdx) {
+        if (!confirm("سيتم نسخ توقيت هذا اليوم إلى جميع الأيام الأخرى، هل تريد المتابعة؟")) return;
+        const currentSheet = getActiveSheet();
+        for (let s = 1; s <= currentSheet.sessionsCount; s++) {
+            const start = currentSheet.data[`d${dayIdx}_s${s}_start`] || "";
+            const end = currentSheet.data[`d${dayIdx}_s${s}_end`] || "";
+            days.forEach((d, idx) => {
+                if (idx === dayIdx) return;
+                if (start) currentSheet.data[`d${idx}_s${s}_start`] = start; else delete currentSheet.data[`d${idx}_s${s}_start`];
+                if (end) currentSheet.data[`d${idx}_s${s}_end`] = end; else delete currentSheet.data[`d${idx}_s${s}_end`];
+            });
+        }
+        saveData();
+        renderApp();
+    }
+
+    // ---------- حساب المجاميع ----------
+    function calculateAndDisplayTotals() {
+        const currentSheet = getActiveSheet();
+        let grandTotalMinutes = 0;
+        let workingDays = 0;
+
+        days.forEach((day, dayIdx) => {
+            let dayTotalMinutes = 0;
+            for (let s = 1; s <= currentSheet.sessionsCount; s++) {
+                dayTotalMinutes += getSessionMinutes(currentSheet, dayIdx, s);
+            }
+            if (dayTotalMinutes > 0) workingDays++;
+            const totalEl = document.getElementById(`dayTotal_${dayIdx}`);
+            if (totalEl) totalEl.textContent = formatMinutes(dayTotalMinutes);
+            grandTotalMinutes += dayTotalMinutes;
+
+            const issues = getDayIssues(currentSheet, dayIdx);
+            const issueBox = document.getElementById(`dayIssue_${dayIdx}`);
+            if (issueBox) {
+                issueBox.style.display = issues.length ? "block" : "none";
+                issueBox.textContent = issues.length ? "⚠ " + issues.join(" — ") : "";
+            }
+        });
+
+        document.getElementById('weeklyTotal').textContent = formatMinutes(grandTotalMinutes);
+        const decimalHours = grandTotalMinutes / 60;
+        document.getElementById('statDecimal').textContent = decimalHours.toFixed(2);
+        document.getElementById('statDays').textContent = `${workingDays} / 7`;
+        document.getElementById('statAvg').textContent = (workingDays ? decimalHours / workingDays : 0).toFixed(2);
+    }
+
+    // ---------- رسم الواجهة ----------
+    function renderSheetsBar() {
+        const sheetsBar = document.getElementById('sheetsBar');
+        sheetsBar.innerHTML = "";
+        appData.sheets.forEach(sheet => {
+            const tab = document.createElement('button');
+            tab.type = 'button';
+            tab.className = `sheet-tab ${sheet.id === appData.activeSheetId ? 'active' : ''}`;
+            tab.textContent = sheet.name;
+            tab.onclick = () => switchSheet(sheet.id);
+            sheetsBar.appendChild(tab);
+        });
+        const addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.className = 'add-sheet-btn';
+        addBtn.textContent = '+ إضافة ورقة';
+        addBtn.onclick = addNewSheet;
+        sheetsBar.appendChild(addBtn);
+    }
+
+    function renderApp() {
+        renderSheetsBar();
+        const currentSheet = getActiveSheet();
+
+        document.getElementById('sheetNameInput').value = currentSheet.name;
+        document.getElementById('sessionsCountDisplay').textContent = currentSheet.sessionsCount;
+        document.getElementById('metaInstitution').value = currentSheet.institution || "";
+        document.getElementById('metaSchoolYear').value = currentSheet.schoolYear || "";
+        document.getElementById('metaValues').value = currentSheet.values || "";
+        document.getElementById('metaGeneralValues').value = currentSheet.generalValues || "";
+        document.getElementById('metaDirector').value = currentSheet.director || "";
+        document.getElementById('metaMrMrs').value = currentSheet.mrMrs || "";
+        document.getElementById('metaRank').value = currentSheet.rank || "";
+        document.getElementById('metaHoursRequired').value = currentSheet.hoursRequired || "";
+        document.getElementById('metaHoursPerformed').value = currentSheet.hoursPerformed || "";
+        document.getElementById('metaStartDate').value = normalizeDateText(currentSheet.startDate || "");
+        document.getElementById('metaReviewDate').value = normalizeDateText(currentSheet.reviewDate || "");
+        document.getElementById('metaTasks').value = currentSheet.tasks || "";
+
+        const container = document.getElementById('daysContainer');
+        container.innerHTML = "";
+
+        days.forEach((day, dayIdx) => {
+            const dayCard = document.createElement('div');
+            dayCard.className = 'day-card';
+
+            let sessionsHTML = "";
+            for (let s = 1; s <= currentSheet.sessionsCount; s++) {
+                const startVal = currentSheet.data[`d${dayIdx}_s${s}_start`] || "";
+                const endVal = currentSheet.data[`d${dayIdx}_s${s}_end`] || "";
+                sessionsHTML += `
+                    <div class="session-box">
+                        <div class="session-header">
+                            <span class="session-title">الحصة ${s}</span>
+                            <button class="clear-session-btn" title="تفريغ الحصة" aria-label="تفريغ الحصة ${s}" onclick="clearSession(${dayIdx}, ${s})">&times;</button>
+                        </div>
+                        <div class="inputs-row">
+                            <label>من:</label>
+                            <input type="time" id="d${dayIdx}_s${s}_start" value="${startVal}" onchange="handleTimeChange(${dayIdx}, ${s}, 'start', this.value)">
+                            <label>إلى:</label>
+                            <input type="time" id="d${dayIdx}_s${s}_end" value="${endVal}" onchange="handleTimeChange(${dayIdx}, ${s}, 'end', this.value)">
+                        </div>
+                    </div>`;
+            }
+
+            dayCard.innerHTML = `
+                <div class="day-title-row">
+                    <span class="day-title">${day}</span>
+                </div>
+                <div class="day-issue" id="dayIssue_${dayIdx}" style="display:none;"></div>
+                <div class="sessions-grid">${sessionsHTML}</div>
+                <div class="day-footer">
+                    <span>مجموع اليوم: <span class="day-total" id="dayTotal_${dayIdx}"></span></span>
+                    <div class="btn-group">
+                        <button class="mini-btn" onclick="applyDayToAll(${dayIdx})">نسخ لكل الأيام</button>
+                        <button class="mini-btn danger" onclick="clearDay(${dayIdx})">تفريغ اليوم</button>
+                    </div>
+                </div>`;
+            container.appendChild(dayCard);
+        });
+
+        calculateAndDisplayTotals();
+    }
+
+    // ---------- الطباعة ----------
+    function printCurrentSheet() {
+        const currentSheet = getActiveSheet();
+        const printArea = document.getElementById('printArea');
+        let grandTotalMinutes = 0;
+        let tableRowsHTML = "";
+        let headerCells = "";
+        for (let s = 1; s <= currentSheet.sessionsCount; s++) headerCells += `<th>الحصة ${s}</th>`;
+
+        days.forEach((day, dayIdx) => {
+            let dayTotalMinutes = 0;
+            let sessionsCellsHTML = "";
+            for (let s = 1; s <= currentSheet.sessionsCount; s++) {
+                const start = currentSheet.data[`d${dayIdx}_s${s}_start`];
+                const end = currentSheet.data[`d${dayIdx}_s${s}_end`];
+                dayTotalMinutes += getSessionMinutes(currentSheet, dayIdx, s);
+                sessionsCellsHTML += (start && end) ? `<td>من ${start} إلى ${end}</td>` : `<td>-</td>`;
+            }
+            grandTotalMinutes += dayTotalMinutes;
+            const tasksCell = dayIdx === 0
+                ? `<td rowspan="${days.length}">${(currentSheet.tasks || "").replace(/\n/g, "<br>")}</td>`
+                : "";
+            tableRowsHTML += `
+                <tr>
+                    <td><strong>${day}</strong></td>
+                    ${sessionsCellsHTML}
+                    <td><strong>${formatMinutes(dayTotalMinutes)}</strong></td>
+                    ${tasksCell}
+                </tr>`;
+        });
+
+        printArea.innerHTML = `
+            <div class="print-header">
+                <div class="meta-box"><span class="meta-label">السنة الدراسية:</span> ${currentSheet.schoolYear || ""}</div>
+                <div class="sheet-title">${currentSheet.name}</div>
+                <div class="meta-box"><span class="meta-label">المدرسة </span> ${currentSheet.institution || ""}</div>
+            </div>
+            <div class="print-meta-row2">
+                <div class="meta-col right">
+                    <div class="meta-item"><span class="meta-label">السّيّد(ة):</span> ${currentSheet.mrMrs || ""}</div>
+                    <div class="meta-item"><span class="meta-label">يبدأ العمل بهذا الجدول بداية من يوم:</span> ${currentSheet.startDate || ""}</div>
+                </div>
+                <div class="meta-col center">
+                    <div class="meta-item"><span class="meta-label">الرّتبة:</span> ${currentSheet.rank || ""}</div>
+                    <div class="meta-item"><span class="meta-label">السّاعات المطالب بها:</span> ${currentSheet.hoursRequired || ""}</div>
+                </div>
+                <div class="meta-col left">
+                    <div class="meta-item"><span class="meta-label">السّاعات القائم بها:</span> ${currentSheet.hoursPerformed || ""}</div>
+                </div>
+            </div>
+            <table class="print-table">
+                <thead><tr><th>الأيام / الحصص</th>${headerCells}<th>مجموع اليوم</th><th>المهام و المشمولات</th></tr></thead>
+                <tbody>
+                    ${tableRowsHTML}
+                    <tr class="total-row"><td colspan="${currentSheet.sessionsCount + 1}">المجموع الأسبوعي الكلي</td><td>${formatMinutes(grandTotalMinutes)}</td><td></td></tr>
+                </tbody>
+            </table>
+            <div class="print-note">
+                <div class="note-line">هذا الجدول قابل للتغيير حسب ضرورة العمل</div>
+                <div class="note-line">اطلعت عليه و اتصلت بالأصل منه</div>
+                <div class="note-line"><span class="meta-label">في:</span> ${currentSheet.reviewDate || ""}</div>
+            </div>
+            <div class="print-footer">
+                <div class="meta-box"><span class="meta-label">المدير</span>${currentSheet.director || ""}</div>
+                <div class="meta-box"><span class="meta-label">القيم العام</span>${currentSheet.generalValues || ""}</div>
+                <div class="meta-box"><span class="meta-label">إمضاء القيّم/ة</span>${currentSheet.values || ""}</div>
+            </div>`;
+        window.print();
+    }
+
+    // ---------- نسخ احتياطي ----------
+    function exportData() {
+        const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `نسخة_احتياطية_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    function importData(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                if (!parsed.sheets || !Array.isArray(parsed.sheets)) throw new Error("صيغة غير صالحة");
+                if (!confirm("سيتم استبدال جميع البيانات الحالية بالنسخة المستوردة، هل تريد المتابعة؟")) return;
+                appData = parsed;
+                saveData();
+                loadData();
+            } catch (err) {
+                alert("تعذّر قراءة الملف. تأكد أنه ملف نسخة احتياطية صالح.");
+            }
+        };
+        reader.readAsText(file);
+        document.getElementById('importFileInput').value = "";
+    }
+
+    // ---------- المظهر ----------
+    function toggleTheme() {
+        appData.theme = appData.theme === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute('data-theme', appData.theme);
+        saveData();
+    }
+
+    // ---------- الساعة الحية ----------
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('liveTime').textContent = now.toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById('liveDate').textContent = now.toLocaleDateString('ar', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+    }
+    function startClock() {
+        updateClock();
+        setInterval(updateClock, 1000);
+    }
+
+    loadData();
+</script>
+
+</body>
+</html>
